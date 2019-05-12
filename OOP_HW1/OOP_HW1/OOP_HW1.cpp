@@ -5,8 +5,8 @@
 #include <iostream>
 #include <conio.h>
 #include <Windows.h>
-#define LEFT 0
-#define RIGHT 1 // 전처리기로 방향 설정
+#define LEFT 1
+#define RIGHT 2 // 전처리기로 방향 설정
 
 using namespace std;
 
@@ -154,10 +154,12 @@ public:
 
 class Bullet : public GameObject {
 	bool isFiring;
-
+	int direction; // 방향을 저장하기 위함
+	Player* player; // 방향을 부르기 위한 Player의 클래스 선언
+	Enemy* enemy; // enemy의 위치를 부르기 위한 Emeny 클래스 선언
 public:
-	Bullet(int pos, const char* default_face, Screen* screen)
-		: GameObject(pos, default_face, screen), isFiring(false)
+	Bullet(int pos, const char* default_face, Screen* screen, Player* player, Enemy* enemy)
+		: GameObject(pos, default_face, screen), isFiring(false), player(player), enemy(enemy), direction(NULL)
 	{
 	}
 
@@ -180,23 +182,27 @@ public:
 	void fire(int player_pos)
 	{
 		isFiring = true;
+		direction = player->getDirection(); // 발사할 때 방향 저장
 		setPosition(player_pos);
 	}
 
-	void update(int enemy_pos)
+	void update()
 	{
 		if (isFiring == false) return;
-		int pos = getPosition();
-		if (pos < enemy_pos) {
-			pos = pos + 1;
-		}
-		else if (pos > enemy_pos) {
-			pos = pos - 1;
-		}
-		else {
+		
+		if (getPosition() == enemy->getPosition()) { // Bullet이 Enemy의 위치에 도달했을 때 제거
 			isFiring = false;
 		}
-		setPosition(pos);
+		else if (getPosition() < 0 || getPosition() >= 80) { // Bullet이 스크린 사이즈를 벗어났을 때 제거
+			isFiring = false;
+		}
+		
+		if (direction == RIGHT) { // 방향이 오른쪽일 때 오른쪽으로 이동
+			moveRight();
+		}
+		else if (direction == LEFT) { // 방향이 왼쪽일 때 왼쪽으로 이동
+			moveLeft();
+		}
 	}
 };
 
@@ -205,7 +211,7 @@ int main()
 	Screen screen{ 80 };
 	Player player{ 30, "(<)☞", "☜(>)", &screen };
 	Enemy enemy{ 60, "(*--*)", &screen };
-	Bullet bullet(-1, "+", &screen);
+	Bullet bullet(-1, "+", &screen, &player, &enemy);
 
 	while (true)
 	{
@@ -232,7 +238,7 @@ int main()
 
 		/* player.update(); */
 		enemy.update();
-		bullet.update(enemy.getPosition());
+		bullet.update();
 
 		screen.render();
 		Sleep(66);
