@@ -5,6 +5,7 @@
 #include <iostream>
 #include <conio.h>
 #include <Windows.h>
+#include <stdlib.h>
 #define PISTOL 100
 #define LASER 101
 #define LEFT 1
@@ -309,8 +310,10 @@ public:
 
 int main()
 {
-	int megazine = 10, autore = 0, cooldown = 0; // 총알, 총알 자동 추가시간, 쿨타임 을 담당
+	int megazine = 10, autore = 0, cooldown = 0, attack = 20; // 총알, 총알 자동 추가시간, 쿨타임 을 담당
 	bool reloading = false, shot = false; // 리로딩 여부 담당, 레이저 발사 여부
+	char status[5] = "(  )"; // 스테이터스 창 생성
+	char temp[3]; // 임의 창
 	Screen screen{ 80 };
 	Player player{ 30, 10, "(<)☞", "☜(>)", &screen };
 	Enemy enemy{ 60, 5, "(*--*)", &screen };
@@ -341,6 +344,7 @@ int main()
 				player.moveRight();
 				break;
 			case ' ':
+				attack = 0;
 				if (bullets[0]->getGun() == LASER) {
 					if (shot) break;;
 					if (bullets[0]->getFIre() == false) {
@@ -380,19 +384,43 @@ int main()
 		for (int i = 0; i <= 9; i++) {
 			bullets[i]->update();
 		}
-		if (shot) { // 레이저건을 쐈을 때
-			cooldown++; // 쿨타임 재줌
+		if (bullets[0]->getGun() == LASER) { // 총이 레이저일 때
+			if (shot) { // 레이저건을 쐈을 때
+				cooldown++; // 쿨타임 재줌
+				if (cooldown <= 31) {
+					_itoa(2 - cooldown / 15, status, 10); // 남은 공격 시간
+				}
+				else if (cooldown >= 31 && cooldown <= 75) {
+					_itoa(5 - cooldown / 15, status, 10); // 남은 쿨타임
+				}
+			}
+			if (cooldown == 75) { // 5초 지나면 다시 쏘게 설정 (2초동안 쏘는 시간도 포함하기 때문에)
+				shot = false;
+			}
 		}
-		if (cooldown == 75) { // 5초 지나면 다시 쏘게 설정 (2초동안 쏘는 시간도 포함하기 때문에)
-			shot = false;
+		if (bullets[0]->getGun() == PISTOL) { // 총이 권총일 때
+			if (reloading || megazine <= 0) { // 리로딩 중이거나 총알이 없을 때 자동으로 채워줌
+				autore++;
+				reloading = true;
+				_itoa(10 - megazine, status, 10); // 장전 남은 시간
+			}
+			else {
+				_itoa(megazine, status, 10); // 남은 총알
+			}
+			if (autore == 15) { // 1초 지나면 1개 총알 추가
+				autore = 0; // 다시 세기 위해 초기화
+				megazine++; // 총알 추가
+			}
 		}
-		if (reloading || megazine <= 0) { // 리로딩 중이거나 총알이 없을 때 자동으로 채워줌
-			autore++;
-			reloading = true;
-		}
-		if (autore == 15) { // 1초 지나면 1개 총알 추가
-			autore = 0; // 다시 세기 위해 초기화
-			megazine++; // 총알 추가
+		
+		if (attack <= 15) { // 1초간 공격 상태 정보를 띄움
+			if (player.getDirection() == RIGHT) { // 오른쪽으로 공격할 때 왼쪽에서 뜨도록
+				screen.draw(0, status);
+			}
+			else if (player.getDirection() == LEFT) { // 왼쪽으로 공격할 때 오른쪽에서 뜨도록
+				screen.draw(74, status);
+			}
+			attack++;
 		}
 		screen.render();
 		Sleep(66);
