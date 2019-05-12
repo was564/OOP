@@ -5,6 +5,8 @@
 #include <iostream>
 #include <conio.h>
 #include <Windows.h>
+#define PISTOL 100
+#define LASER 101
 #define LEFT 1
 #define RIGHT 2 // 전처리기로 방향 설정
 
@@ -50,16 +52,16 @@ public:
 
 class GameObject {
 	int pos;
+	int hp; // 각 개체마다 hp를 설정 (총알은 hp로 데미지 설정) 
 	char default_face[20]; // default_face로 enemy와 bullet의 기본 얼굴과 플레이어가 오른쪽을 향할 때 얼굴을 지정
 	Screen* screen;
 
 public:
-	GameObject(int pos, const char* default_face, Screen* screen)
-		: pos(pos), screen(screen)
+	GameObject(int pos, int hp, const char* default_face, Screen* screen)
+		: pos(pos), screen(screen), hp(hp)
 	{
 		strcpy(this->default_face, default_face);
 	}
-
 
 	int getPosition()
 	{
@@ -69,7 +71,7 @@ public:
 	{
 		this->pos = pos;
 	}
-	void draw(char *face)
+	void draw(int pos, char *face)
 	{
 		screen->draw(pos, face);
 	}
@@ -77,16 +79,24 @@ public:
 	char* getFace() { // face정보를 얻기 위해 사용
 		return default_face;
 	}
+	
+	void discountHp(const int damage) { // 피격 이벤트 함수
+		hp -= damage;
+	}
+
+	int getHp() { // 체력을 보는 함수
+		return hp;
+	}
 };
 
 class Player : public GameObject {
 
+	
 	int direction; // 방향 설정
 	char other_face[20]; // other_face를 왼쪽 얼굴로 설정
-
 public:
-	Player(int pos, const char* default_face, const char* other_face, Screen* screen)
-		: GameObject(pos, default_face, screen), direction(RIGHT) // 방향 기본값을 오른쪽(1)로 설정
+	Player(int pos, int hp, const char* default_face, const char* other_face, Screen* screen)
+		: GameObject(pos, hp, default_face, screen), direction(RIGHT) // 방향 기본값을 오른쪽으로 설정, 총의 기본값을 권총으로 설정
 	{
 		strcpy(this->other_face, other_face);
 	}
@@ -94,13 +104,13 @@ public:
 	void moveLeft()
 	{
 		setPosition(getPosition() - 1);
-		direction = LEFT;
+		direction = LEFT; // 방향 설정
 	}
 
 	void moveRight()
 	{
 		setPosition(getPosition() + 1);
-		direction = RIGHT;
+		direction = RIGHT; // 방향 설정
 	}
 
 	/* void update()
@@ -110,10 +120,10 @@ public:
 
 	void draw() { // 방향에 따른 얼굴을 출력하기 위한 오버로딩 함수
 		if (direction == RIGHT) {
-			GameObject::draw(getFace());
+			GameObject::draw(getPosition(), getFace());
 		}
 		else if (direction == LEFT) {
-			GameObject::draw(other_face);
+			GameObject::draw(getPosition(), other_face);
 		}
 	}
 
@@ -126,8 +136,8 @@ public:
 class Enemy : public GameObject {
 	
 public:
-	Enemy(int pos, const char* default_face, Screen* screen)
-		: GameObject(pos, default_face, screen)
+	Enemy(int pos, int hp, const char* default_face, Screen* screen)
+		: GameObject(pos, hp, default_face, screen)
 	{
 	}
 
@@ -148,41 +158,83 @@ public:
 	}
 
 	void draw() { // draw함수를 적용시키기 위한 오버로딩 함수
-		GameObject::draw(getFace());
+		GameObject::draw(getPosition(), getFace());
 	}
 };
 
 class Bullet : public GameObject {
+	int gun; // 총 종류 선언
 	bool isFiring;
 	int direction; // 방향을 저장하기 위함
+	int hit_time; // 레이저일때 enemy가 맞고 있는 시간
+	int laser_time; // 레이저가 한 번 발사될 때 유지되는 시간
+	char laser_face[80];
 	Player* player; // 방향을 부르기 위한 Player의 클래스 선언
 	Enemy* enemy; // enemy의 위치를 부르기 위한 Emeny 클래스 선언
 public:
-	Bullet(int pos, const char* default_face, Screen* screen, Player* player, Enemy* enemy)
-		: GameObject(pos, default_face, screen), isFiring(false), player(player), enemy(enemy), direction(NULL)
+	Bullet(int pos, int hp, const char* default_face, Screen* screen, Player* player, Enemy* enemy)
+		: GameObject(pos, hp, default_face, screen), isFiring(false), player(player), enemy(enemy), direction(NULL), hit_time(0), laser_time(0), gun(PISTOL)
 	{
 	}
 
 	void moveLeft()
 	{
-		setPosition(getPosition() - 1);
+		setPosition(getPosition() - 3);
 	}
 
 	void moveRight()
 	{
-		setPosition(getPosition() + 1);
+		setPosition(getPosition() + 3);
 	}
 
 	void draw()
 	{
 		if (isFiring == false) return;
-		GameObject::draw(getFace());
+		if (getGun() == PISTOL) { // 권총일 때
+			GameObject::draw(getPosition(), getFace());
+		}
+		else if (getGun() == LASER) { // 레이저일 때
+			if (direction == RIGHT) { // 방향이 오른쪽일 때
+				if (player->getPosition() > enemy->getPosition()) { // enemy가 맞지 않을 때
+					for (int i = 0; i <= 79 - player->getPosition(); i++) {
+						strcpy(&laser_face[i], "-");
+					}
+					GameObject::draw(getPosition(), laser_face);
+					return;
+				}
+				// enemy가 맞을 때
+				for (int i = 0; i <= enemy->getPosition() - player->getPosition() - 5; i++) {
+					strcpy(&laser_face[i], "-");
+				}
+				GameObject::draw(getPosition(), laser_face);
+				return;
+			}
+			else if (direction == LEFT) { // 방향이 왼쪽일 때
+				if (player->getPosition() < enemy->getPosition()) { // enemy가 맞지 않을 때
+					for (int i = 0; i <= player->getPosition(); i++) {
+						strcpy(&laser_face[i], "-");
+					}
+					GameObject::draw(0, laser_face);
+					return;
+				}	
+				// enemy가 맞을 때
+				for (int i = 0; i <= player->getPosition() - enemy->getPosition(); i++) {
+					strcpy(&laser_face[i], "-");
+				}
+				GameObject::draw(0, laser_face);
+				return;
+			}
+		}
 	}
 
 	void fire(int player_pos)
 	{
 		isFiring = true;
 		direction = player->getDirection(); // 발사할 때 방향 저장
+		hit_time = 0;
+		if (direction == RIGHT) {
+			setPosition(player_pos + 3);
+		}
 		setPosition(player_pos);
 	}
 
@@ -190,18 +242,60 @@ public:
 	{
 		if (isFiring == false) return;
 		
-		if (getPosition() == enemy->getPosition()) { // Bullet이 Enemy의 위치에 도달했을 때 제거
-			isFiring = false;
+		if (getGun() == PISTOL) { // 권총일 때 피격 판정
+			if (getPosition() >= enemy->getPosition() &&
+				getPosition() <= enemy->getPosition() + 3
+				) { // Bullet이 Enemy의 위치에 도달했을 때 제거 (추가 : 총알의 속도를 생각해 범위로 설정)
+				enemy->discountHp(getHp());
+				isFiring = false;
+			}
+			else if (getPosition() < 0 || getPosition() >= 80) { // Bullet이 스크린 사이즈를 벗어났을 때 제거
+				isFiring = false;
+			}
+			if (direction == RIGHT) { // 방향이 오른쪽일 때 오른쪽으로 이동
+				moveRight();
+			}
+			else if (direction == LEFT) { // 방향이 왼쪽일 때 왼쪽으로 이동
+				moveLeft();
+			}
 		}
-		else if (getPosition() < 0 || getPosition() >= 80) { // Bullet이 스크린 사이즈를 벗어났을 때 제거
-			isFiring = false;
+		else if (getGun() == LASER) { // 레이저일때 피격 판정
+			direction = player->getDirection();
+			if (laser_time >= 31) { // 레이저가 2초 이상 지속되면 발사를 중지한다.
+				laser_time = 0;
+				isFiring = false;
+			}
+			else { // 2초가 안됐다면 시간 카운트
+				laser_time++;
+			}
+			if (direction == RIGHT) { // 방향이 오른쪽 일 때
+				if (player->getPosition() > enemy->getPosition()) // enemy가 맞지 않을 때
+					return;
+				hit_time++; // enemy가 맞으면 맞은 시간 축적
+			}
+			else if (direction == LEFT) { // 방향이 왼쪽일 때
+				if (player->getPosition() < enemy->getPosition()) // enemy가 맞지 않을 때
+					return;
+				hit_time++; // enemy가 맞으면 맞은 시간 축적
+			}
+			if (hit_time >= 15) { // 1초 동안 맞을 시 1 데미지를 입힘
+				enemy->discountHp(getHp());
+				hit_time = 0;
+			}
 		}
-		
-		if (direction == RIGHT) { // 방향이 오른쪽일 때 오른쪽으로 이동
-			moveRight();
+	}
+
+	int getGun() { // 지금 들고 있는 총 정보를 얻는 함수
+		return gun;
+	}
+
+	void setGun() { // 총 종류 바꾸기
+		if (isFiring == true) return; // 총알이 발사된 상태라면 바꾸지 못하게
+		if (gun == PISTOL) { // 권총은 레이저로
+			gun = LASER;
 		}
-		else if (direction == LEFT) { // 방향이 왼쪽일 때 왼쪽으로 이동
-			moveLeft();
+		else if (gun == LASER) { // 레이저는 권총으로
+			gun = PISTOL;
 		}
 	}
 };
@@ -209,9 +303,9 @@ public:
 int main()
 {
 	Screen screen{ 80 };
-	Player player{ 30, "(<)☞", "☜(>)", &screen };
-	Enemy enemy{ 60, "(*--*)", &screen };
-	Bullet bullet(-1, "+", &screen, &player, &enemy);
+	Player player{ 30, 10, "(<)☞", "☜(>)", &screen };
+	Enemy enemy{ 60, 5, "(*--*)", &screen };
+	Bullet bullet(-1, 1, "+", &screen, &player, &enemy);
 
 	while (true)
 	{
@@ -229,6 +323,10 @@ int main()
 				break;
 			case ' ':
 				bullet.fire(player.getPosition());
+				break;
+
+			case 'm': // 총 바꾸기
+				bullet.setGun();
 				break;
 			}
 		}
