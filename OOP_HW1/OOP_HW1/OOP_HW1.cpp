@@ -164,6 +164,7 @@ public:
 
 class Bullet : public GameObject {
 	int gun; // 총 종류 선언
+	int cooltime; // 레이저건의 쿨타임 시간
 	bool isFiring;
 	int direction; // 방향을 저장하기 위함
 	int hit_time; // 레이저일때 enemy가 맞고 있는 시간
@@ -173,8 +174,10 @@ class Bullet : public GameObject {
 	Enemy* enemy; // enemy의 위치를 부르기 위한 Emeny 클래스 선언
 public:
 	Bullet(int pos, int hp, const char* default_face, Screen* screen, Player* player, Enemy* enemy)
-		: GameObject(pos, hp, default_face, screen), isFiring(false), player(player), enemy(enemy), direction(NULL), hit_time(0), laser_time(0), gun(PISTOL)
+		: GameObject(pos, hp, default_face, screen), isFiring(false), player(player), enemy(enemy), direction(NULL),
+		hit_time(0), laser_time(0), gun(PISTOL), cooltime(0)
 	{
+		memset(laser_face, '\0', sizeof(laser_face));
 	}
 
 	void moveLeft()
@@ -298,15 +301,31 @@ public:
 			gun = PISTOL;
 		}
 	}
+
+	bool getFIre() {
+		return isFiring;
+	}
 };
 
 int main()
 {
+	int megazine = 10, autore = 0, cooldown = 0; // 총알, 총알 자동 추가시간, 쿨타임 을 담당
+	bool reloading = false, shot = false; // 리로딩 여부 담당, 레이저 발사 여부
 	Screen screen{ 80 };
 	Player player{ 30, 10, "(<)☞", "☜(>)", &screen };
 	Enemy enemy{ 60, 5, "(*--*)", &screen };
-	Bullet bullet(-1, 1, "+", &screen, &player, &enemy);
-
+	Bullet bullet1{ -1, 1, "+", &screen, &player, &enemy }; // 연사를 위해 만들어 놓은 총알들
+	Bullet bullet2{ -1, 1, "+", &screen, &player, &enemy };
+	Bullet bullet3{ -1, 1, "+", &screen, &player, &enemy };
+	Bullet bullet4{ -1, 1, "+", &screen, &player, &enemy };
+	Bullet bullet5{ -1, 1, "+", &screen, &player, &enemy };
+	Bullet bullet6{ -1, 1, "+", &screen, &player, &enemy };
+	Bullet bullet7{ -1, 1, "+", &screen, &player, &enemy };
+	Bullet bullet8{ -1, 1, "+", &screen, &player, &enemy };
+	Bullet bullet9{ -1, 1, "+", &screen, &player, &enemy };
+	Bullet bullet0{ -1, 1, "+", &screen, &player, &enemy };
+	// 배열로 한꺼번에 관리
+	Bullet* bullets[10] = { &bullet0, &bullet1, &bullet2, &bullet3, &bullet4, &bullet5, &bullet6, &bullet7, &bullet8 ,&bullet9 };
 	while (true)
 	{
 		screen.clear();
@@ -322,22 +341,59 @@ int main()
 				player.moveRight();
 				break;
 			case ' ':
-				bullet.fire(player.getPosition());
+				if (bullets[0]->getGun() == LASER) {
+					if (shot) break;;
+					if (bullets[0]->getFIre() == false) {
+						shot = true;
+						cooldown = 0;
+						bullets[0]->fire(player.getPosition());
+						break;
+					}
+				}
+				else {
+					if (megazine <= 0) break;; // 탄창에 총알이 없을 때
+					for (int i = 0; i <= 9; i++) { // 연사
+						reloading = false;
+						megazine--;
+						autore = 0;
+						if (bullets[i]->getFIre() == false) {
+							bullets[i]->fire(player.getPosition());
+							break;
+						}
+					}
+				}
 				break;
 
 			case 'm': // 총 바꾸기
-				bullet.setGun();
+				bullets[0]->setGun();
 				break;
 			}
 		}
 		player.draw();
-		enemy.draw();
-		bullet.draw();
+		enemy.draw(); 
+		for (int i = 0; i <= 9; i++) {
+			bullets[i]->draw();
+		}
 
 		/* player.update(); */
 		enemy.update();
-		bullet.update();
-
+		for (int i = 0; i <= 9; i++) {
+			bullets[i]->update();
+		}
+		if (shot) { // 레이저건을 쐈을 때
+			cooldown++; // 쿨타임 재줌
+		}
+		if (cooldown == 75) { // 5초 지나면 다시 쏘게 설정 (2초동안 쏘는 시간도 포함하기 때문에)
+			shot = false;
+		}
+		if (reloading || megazine <= 0) { // 리로딩 중이거나 총알이 없을 때 자동으로 채워줌
+			autore++;
+			reloading = true;
+		}
+		if (autore == 15) { // 1초 지나면 1개 총알 추가
+			autore = 0; // 다시 세기 위해 초기화
+			megazine++; // 총알 추가
+		}
 		screen.render();
 		Sleep(66);
 	}
