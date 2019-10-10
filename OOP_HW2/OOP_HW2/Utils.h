@@ -167,15 +167,21 @@ public:
 };
 
 class Screen {
+	string blank2 = "\xDB\xDB\xDB\xDB";
+	string blank3 = "\xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB";
+	string blank4 = "\xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB";
 	int width;
 	int height;
 	char* canvas;
+	// 다음 블럭 그릴 곳 추가
+	char* nextCanvas;
 
 	static Screen* instance;
-	Screen(int width = 90, int height = 50)
+	Screen(int width = 30, int height = 50)
 		: width(width), height(height),
-		canvas(new char[(width + 1)*height])
-
+		canvas(new char[(width + 1)*(height + 1)]),
+		// 최대 블럭의 크기는 4 * 4이므로 5 * 5 만큼 할당
+		nextCanvas(new char[(5 + 1)*5])
 	{
 		Input::Initialize();
 	}
@@ -190,6 +196,7 @@ public:
 	~Screen() {
 		if (instance) {
 			delete[] canvas;
+			delete[] nextCanvas;
 			instance = nullptr;
 		}
 	}
@@ -217,7 +224,35 @@ public:
 		if (!shape) return;
 		for (int i = 0; i < h; i++)
 		{
-			strncpy(&canvas[pos.x + (pos.y + i)*(width + 1)], &shape[i*w], w);
+			for (int j = 0; j < w; j++) {
+				// 그림 밖으로 나가거나 그림의 \n \0부분을 지우지 않도록 설정
+				if (canvas[pos.x + j + (pos.y + i)*(width + 1)] == '\xDB') {
+					canvas[pos.x + j + (pos.y + i)*(width + 1)] = shape[i*w + j];
+				}
+			}
+			// strncpy(&canvas[pos.x + (pos.y + i)*(width + 1)], &shape[i*w], w);
+		}
+	}
+	
+	// 블럭을 돌리거나 움직일 때 자기 자신의 블럭에 부딫히는 것을 방지하기 위해 블럭 주변 지우기
+	void clearDraw(int w, int h, const Position& pos)
+	{
+		string blank;
+		switch (w) {
+		case 2:
+			blank = blank2;
+			break;
+		case 3:
+			blank = blank3;
+			break;
+		case 4:
+			blank = blank4;
+			break;
+		}
+		if (!blank.c_str()) return;
+		for (int i = 0; i < h; i++)
+		{
+			strncpy(&canvas[pos.x + (pos.y + i)*(width + 1)], &blank.c_str()[i*w], w);
 		}
 	}
 
@@ -228,13 +263,59 @@ public:
 		canvas[width + (height - 1) * (width + 1)] = '\0';
 		Borland::gotoxy(0, 0);
 		cout << canvas;
+
+		// nextCanvas 즉, 다음 블럭을 표시하는 그림을 출력
+		for (int i = 0; i < 4; i++)
+			nextCanvas[5 + i * (5 + 1)] = '\0';
+		for (int i = 0; i < 4; i++) {
+			Borland::gotoxy(getWidth() + 4, i + 1);
+			cout << &nextCanvas[i * 6];
+		}
+		
 	}
 
 	void clear()
 	{
-		memset(canvas, ' ', (width + 1)*height);
+		memset(canvas, '\xDB', (width + 1)*height);
 		canvas[width + (height - 1)*(width + 1)] = '\0';
+		for (int i = 1; i <= width; i++) {
+			canvas[width + (height - 1)*(width + 1) + i] = ' ';
+		}
 	}
+
+	char getChar(int x, int y) {
+		char text = canvas[x + y * (width + 1)];
+		return text;
+	}
+
+	int getBottom(int x, int y) {
+		for (int i = y; i < getHeight(); i++) {
+			if (getChar(x, i) == ' ') {
+				return i - 1;
+			}
+		}
+	}
+
+	// 다음 블럭을 표시하는 그림을 초기화
+	void clearNext() {
+		memset(nextCanvas, '\xDB', 30);
+		nextCanvas[5 + (5 - 1)*(5 + 1)] = '\0';
+	}
+
+	// 다음 블럭을 표시하는 그림에 다음 블럭을 그림
+	void drawNext(const char* shape, int w, int h)
+	{
+		for (int i = 0; i < h; i++)
+		{
+			for (int j = 0; j < w; j++) {
+				// 그림 밖으로 나가거나 그림의 \n \0부분을 지우지 않도록 설정
+				if (nextCanvas[j + 1 + (i + 1)*(5 + 1)] == '\xDB') {
+					nextCanvas[j + 1 + (i + 1)*(5 + 1)] = shape[i*w + j];
+				}
+			}
+		}
+	}
+
 };
 
 Screen* Screen::instance = nullptr;
