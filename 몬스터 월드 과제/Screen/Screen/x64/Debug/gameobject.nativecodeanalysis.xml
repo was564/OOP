@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DEFECTS>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>c:\users\was56\desktop\component기반설계\component기반설계\oop-2019_2\screen\screen</FILEPATH>
+      <FILENAME>utils.h</FILENAME>
+      <LINE>30</LINE>
+      <COLUMN>27</COLUMN>
+    </SFA>
+    <DEFECTCODE>26451</DEFECTCODE>
+    <DESCRIPTION>Arithmetic overflow: Using operator '*' on a 4 byte value and then casting the result to a 8 byte value. Cast the value to the wider type before calling operator '*' to avoid overflow (io.2).</DESCRIPTION>
+    <FUNCTION>Vector2::sqrMagnitude</FUNCTION>
+    <DECORATED>?sqrMagnitude@Vector2@@QEAANXZ</DECORATED>
+    <FUNCLINE>29</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>c:\users\was56\desktop\component기반설계\component기반설계\oop-2019_2\screen\screen</FILEPATH>
+      <FILENAME>utils.h</FILENAME>
+      <LINE>203</LINE>
+      <COLUMN>29</COLUMN>
+    </SFA>
+    <DEFECTCODE>26451</DEFECTCODE>
+    <DESCRIPTION>Arithmetic overflow: Using operator '*' on a 4 byte value and then casting the result to a 8 byte value. Cast the value to the wider type before calling operator '*' to avoid overflow (io.2).</DESCRIPTION>
+    <FUNCTION>Screen::{ctor}</FUNCTION>
+    <DECORATED>??0Screen@@AEAA@HH@Z</DECORATED>
+    <FUNCLINE>201</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>c:\users\was56\desktop\component기반설계\component기반설계\oop-2019_2\screen\screen</FILEPATH>
+      <FILENAME>utils.h</FILENAME>
+      <LINE>203</LINE>
+      <COLUMN>25</COLUMN>
+    </SFA>
+    <DEFECTCODE>26451</DEFECTCODE>
+    <DESCRIPTION>Arithmetic overflow: Using operator '+' on a 4 byte value and then casting the result to a 8 byte value. Cast the value to the wider type before calling operator '+' to avoid overflow (io.2).</DESCRIPTION>
+    <FUNCTION>Screen::{ctor}</FUNCTION>
+    <DECORATED>??0Screen@@AEAA@HH@Z</DECORATED>
+    <FUNCLINE>201</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>c:\users\was56\desktop\component기반설계\component기반설계\oop-2019_2\screen\screen</FILEPATH>
+      <FILENAME>utils.h</FILENAME>
+      <LINE>231</LINE>
+      <COLUMN>41</COLUMN>
+    </SFA>
+    <DEFECTCODE>26451</DEFECTCODE>
+    <DESCRIPTION>Arithmetic overflow: Using operator '-' on a 4 byte value and then casting the result to a 8 byte value. Cast the value to the wider type before calling operator '-' to avoid overflow (io.2).</DESCRIPTION>
+    <FUNCTION>Screen::drawRect</FUNCTION>
+    <DECORATED>?drawRect@Screen@@QEAAXAEBUVector2@@HH@Z</DECORATED>
+    <FUNCLINE>227</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>c:\users\was56\desktop\component기반설계\component기반설계\oop-2019_2\screen\screen</FILEPATH>
+      <FILENAME>utils.h</FILENAME>
+      <LINE>234</LINE>
+      <COLUMN>75</COLUMN>
+    </SFA>
+    <DEFECTCODE>26451</DEFECTCODE>
+    <DESCRIPTION>Arithmetic overflow: Using operator '-' on a 4 byte value and then casting the result to a 8 byte value. Cast the value to the wider type before calling operator '-' to avoid overflow (io.2).</DESCRIPTION>
+    <FUNCTION>Screen::drawRect</FUNCTION>
+    <DECORATED>?drawRect@Screen@@QEAAXAEBUVector2@@HH@Z</DECORATED>
+    <FUNCLINE>227</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>c:\users\was56\desktop\component기반설계\component기반설계\oop-2019_2\screen\screen</FILEPATH>
+      <FILENAME>utils.h</FILENAME>
+      <LINE>261</LINE>
+      <COLUMN>33</COLUMN>
+    </SFA>
+    <DEFECTCODE>26451</DEFECTCODE>
+    <DESCRIPTION>Arithmetic overflow: Using operator '*' on a 4 byte value and then casting the result to a 8 byte value. Cast the value to the wider type before calling operator '*' to avoid overflow (io.2).</DESCRIPTION>
+    <FUNCTION>Screen::clear</FUNCTION>
+    <DECORATED>?clear@Screen@@QEAAXXZ</DECORATED>
+    <FUNCLINE>259</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>c:\users\was56\desktop\component기반설계\component기반설계\oop-2019_2\screen\screen</FILEPATH>
+      <FILENAME>utils.h</FILENAME>
+      <LINE>261</LINE>
+      <COLUMN>29</COLUMN>
+    </SFA>
+    <DEFECTCODE>26451</DEFECTCODE>
+    <DESCRIPTION>Arithmetic overflow: Using operator '+' on a 4 byte value and then casting the result to a 8 byte value. Cast the value to the wider type before calling operator '+' to avoid overflow (io.2).</DESCRIPTION>
+    <FUNCTION>Screen::clear</FUNCTION>
+    <DECORATED>?clear@Screen@@QEAAXXZ</DECORATED>
+    <FUNCLINE>259</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+</DEFECTS>
